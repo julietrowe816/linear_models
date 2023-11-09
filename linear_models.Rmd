@@ -41,5 +41,39 @@ Let's look at the `fit`
 ```{r}
 fit
 summary(fit)
+summary(fit)$coef
+coef(fit)
+fitted.values(fit)
+```
+
+Tidy up the output instead
+
+```{r}
+fit |>
+  broom::glance()
+```
+
+Tidy up the coefficients
+
+```{r}
+fit |> 
+  broom::tidy() |> 
+  select(term, estimate, p.value) |> 
+  mutate(term = str_replace(term, "^borough", "Borough: ")) |> 
+  knitr::kable(digits = 3)
+```
+
+
+```{r}
+fit = 
+  nyc_airbnb |>
+  mutate(
+    borough = fct_infreq(borough),
+    room_type = fct_infreq(room_type)
+  ) |>
+  lm(price ~ stars + borough + room_type, data = _)
+
+fit |>
+  broom::tidy()
 ```
 
