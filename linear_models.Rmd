@@ -5,13 +5,14 @@ date: "2023-11-09"
 output: html_document
 ---
 
+## Load key packages
+
 ```{r}
 library(tidyverse)
 library(p8105.datasets)
 
 set.seed(1)
 ```
-
 
 
 ```{r}
@@ -76,4 +77,38 @@ fit =
 fit |>
   broom::tidy()
 ```
+
+
+## Quick look at diagnostics
+
+```{r}
+nyc_airbnb |>
+  modelr::add_residuals(fit) |>
+  ggplot(aes(x=resid)) + geom_density() + xlim(-100, 500)
+
+nyc_airbnb |>
+  modelr::add_residuals(fit) |>
+  ggplot(aes(x=borough, y=resid)) + geom_violin()
+
+nyc_airbnb |>
+  modelr::add_residuals(fit) |>
+  ggplot(aes(x=stars, y=resid)) + geom_point()
+```
+
+
+## Hypothesis test for categorical predictor
+
+Fit a "null" and "alternative" model
+
+```{r}
+fit_null = lm(price ~ stars + borough, data = nyc_airbnb)
+fit_alt = lm(price ~ stars + borough + room_type, data = nyc_airbnb)
+
+anova(fit_null, fit_alt) |>
+  broom::tidy
+```
+
+
+## Borough-level differences
+
 
