@@ -1,0 +1,45 @@
+---
+title: "linear_models"
+author: "Juliet Rowe"
+date: "2023-11-09"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+
+set.seed(1)
+```
+
+
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb|>
+  mutate(stars=review_scores_location/2) |>
+  select(
+    price, stars, borough = neighbourhood_group,
+    neighbourhood, room_type) |>
+  filter(borough != "Staten Island")
+
+```
+
+Let's fit a model
+
+```{r}
+fit = 
+  nyc_airbnb |>
+  lm(price ~ stars + borough, data = _)
+```
+
+
+Let's look at the `fit`
+
+```{r}
+fit
+summary(fit)
+```
+
