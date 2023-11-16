@@ -70,3 +70,63 @@ sim_df_nonconst |>
   ggplot(aes(x=x, y=y)) + geom_point(alpha=0.5) + stat_smooth(method="lm")
 ```
 
+
+## Draw a lot of samples and analyze them
+
+```{r}
+boot_straps = 
+  tibble(strap_number = 1:1000) |>
+  mutate(
+    strap_sample = map(strap_number, \(i) boot_sample(sim_df_nonconst))
+  )
+
+boot_straps |>
+  pull(strap_sample) |>
+  nth(1) |>
+  arrange(x)
+```
+
+
+Now do the 'lm' fit
+
+```{r}
+boot_results = 
+  boot_straps |>
+  mutate(
+    models = map(strap_sample, \(df) lm(y~x, data = df)),
+    results = map(models, broom::tidy)
+  ) |>
+  select(strap_number, results) |>
+  unnest(results)
+```
+
+
+try to summarize these results -- get a bootstrap SE
+
+```{r}
+boot_results |>
+  group_by(term) |>
+  summarize(
+    se = sd(estimate)
+  )
+```
+
+look at the distribution
+
+```{r}
+boot_results |>
+  filter(term == "x") |>
+  ggplot(aes(x=estimate)) + geom_density() + facet_grid(. ~ term)
+```
+
+can I construct a CI
+
+```{r}
+boot_results |>
+  group_by(term) |>
+  summarize(
+    ci_lower = quantile(estimate, 0.025),
+    ci_upper = quantile(estimate, 0.975),
+  )
+```
+
